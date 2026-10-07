@@ -1,0 +1,7 @@
+pluginManagement {
+    repositories {
+        maven { url = uri('/home/hatch/workspace/minecraft-modding/local-repo') }
+        maven { url = 'https://maven.fabricmc.net/' }
+        gradlePluginPortal()
+    }
+}

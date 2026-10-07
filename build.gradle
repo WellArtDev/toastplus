@@ -1,0 +1,49 @@
+// Manual build without Loom (offline environment).
+// MC 26.2 Mojang-mapped: compile directly against the client jar + local Maven repo.
+plugins {
+    id 'java'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = uri('/home/hatch/workspace/minecraft-modding/local-repo') }
+}
+
+dependencies {
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "com.mojang:datafixerupper:10.0.21"
+    // Fabric API modules used by this mod (Mojang-mapped, from local repo)
+    implementation "net.fabricmc.fabric-api:fabric-api-base:2.0.4+ece063239e"
+    implementation "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:4.1.3+4575b05f9e"
+    implementation "net.fabricmc.fabric-api:fabric-networking-api-v1:6.3.3+72073ef09e"
+    implementation "net.fabricmc.fabric-api:fabric-rendering-v1:25.3.1+6988455e9e"
+    // Compile-only: shipped inside the game jar at runtime, javac just needs the signatures
+    compileOnly files('/home/hatch/workspace/minecraft-modding/compile-libs/brigadier-1.3.10.jar')
+    compileOnly files('/home/hatch/workspace/minecraft-modding/compile-libs/jspecify-1.0.0.jar')
+    compileOnly files('/home/hatch/workspace/minecraft-modding/compile-libs/fastutil.jar')
+}
+
+// Minecraft client jar straight onto the compile classpath (bypasses dependency resolution)
+tasks.named('compileJava') {
+    classpath = classpath + files('/home/hatch/workspace/minecraft-modding/local-repo/com/mojang/minecraft/26.2/minecraft-26.2.jar')
+}
+
+processResources {
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+    withSourcesJar()
+}
